@@ -38,7 +38,7 @@ export default function DashboardPage() {
             <h1 className="text-xl font-bold text-neutral-900 tracking-tight">
               Welcome back, {user?.fullName || 'User'}
             </h1>
-            <p className="text-xs text-neutral-500 mt-0.5">
+            <p className="text-xs text-neutral-500 mt-0.5"
               Here is what is happening across your workspaces and projects today.
             </p>
           </div>
