@@ -27,7 +27,11 @@ export default function DashboardPage() {
   const workspaceId = currentWorkspace?.id || '';
 
   const { data: projects, isLoading: isProjectsLoading } = useProjects(workspaceId);
-  const { data: activities, isLoading: isActivitiesLoading } = useWorkspaceActivities(workspaceId, 1, 10);
+  const { data: activities, isLoading: isActivitiesLoading } = useWorkspaceActivities(
+    workspaceId,
+    1,
+    10
+  );
 
   return (
     <AppLayout breadcrumbs={[{ label: 'Dashboard' }]}>
@@ -38,7 +42,7 @@ export default function DashboardPage() {
             <h1 className="text-xl font-bold text-neutral-900 tracking-tight">
               Welcome back, {user?.fullName || 'User'}
             </h1>
-            <p className="text-xs text-neutral-500 mt-0.5"
+            <p className="text-xs text-neutral-500 mt-0.5">
               Here is what is happening across your workspaces and projects today.
             </p>
           </div>
@@ -80,7 +84,9 @@ export default function DashboardPage() {
 
           <div className="p-4 rounded-xl bg-white border border-neutral-200 shadow-2xs space-y-1">
             <div className="flex items-center justify-between text-neutral-400">
-              <span className="text-[11px] font-medium uppercase tracking-wider">Current Workspace</span>
+              <span className="text-[11px] font-medium uppercase tracking-wider">
+                Current Workspace
+              </span>
               <Layers className="w-4 h-4 text-neutral-500" />
             </div>
             <div className="text-sm font-bold text-neutral-900 truncate">
