@@ -5,6 +5,6 @@ export default [
   js.configs.recommended,
   prettier,
   {
-    ignores: ['node_modules/**', 'dist/**', 'build/**'],
+    ignores: ['node_modules/**', 'dist/**', 'build/**', 'out/**', '.next/**'],
   },
 ];
