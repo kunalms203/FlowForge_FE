@@ -1,40 +1,42 @@
 'use client';
 
-import React, { use } from 'react';
+import React, { Suspense } from 'react';
 import { AppLayout } from '@/src/components/layout/AppLayout';
 import { useWorkspace } from '@/src/hooks/useWorkspaces';
 import { useProject } from '@/src/hooks/useProjects';
 import { useProjectActivities } from '@/src/hooks/useActivities';
+import { useWorkspaceParams } from '@/src/hooks/useWorkspaceParams';
 import { Button } from '@/src/components/ui/Button';
 import { Skeleton } from '@/src/components/ui/Skeleton';
 import { ActivityTimeline } from '@/src/components/features/ActivityTimeline';
 import Link from 'next/link';
-import {
-  FolderKanban,
-  KanbanSquare,
-  ArrowUpRight,
-  Activity,
-  Calendar,
-} from 'lucide-react';
+import { FolderKanban, KanbanSquare, ArrowUpRight, Activity, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 
-export default function ProjectOverviewPage({
-  params,
-}: {
-  params: Promise<{ workspaceId: string; projectId: string }>;
-}) {
-  const resolvedParams = use(params);
-  const { workspaceId, projectId } = resolvedParams;
+function ProjectOverviewContent() {
+  const { workspaceId, projectId } = useWorkspaceParams();
 
   const { data: workspace } = useWorkspace(workspaceId);
   const { data: project, isLoading } = useProject(workspaceId, projectId);
-  const { data: activities, isLoading: isActivitiesLoading } = useProjectActivities(projectId, 1, 20);
+  const { data: activities, isLoading: isActivitiesLoading } = useProjectActivities(
+    projectId,
+    1,
+    20
+  );
 
   return (
     <AppLayout
       breadcrumbs={[
-        { label: workspace?.name || 'Workspace', href: `/workspaces/${workspaceId}` },
-        { label: 'Projects', href: `/workspaces/${workspaceId}/projects` },
+        {
+          label: workspace?.name || 'Workspace',
+          href: workspaceId ? `/workspaces?workspaceId=${workspaceId}` : '/workspaces',
+        },
+        {
+          label: 'Projects',
+          href: workspaceId
+            ? `/workspaces/projects?workspaceId=${workspaceId}`
+            : '/workspaces/projects',
+        },
         { label: project?.name || 'Project' },
       ]}
     >
@@ -63,7 +65,9 @@ export default function ProjectOverviewPage({
             </div>
           </div>
 
-          <Link href={`/workspaces/${workspaceId}/projects/${projectId}/board`}>
+          <Link
+            href={`/workspaces/projects/board?workspaceId=${workspaceId}&projectId=${projectId}`}
+          >
             <Button size="md" className="gap-2">
               <KanbanSquare className="w-4 h-4" />
               <span>Launch Kanban Board</span>
@@ -119,5 +123,19 @@ export default function ProjectOverviewPage({
         </div>
       </div>
     </AppLayout>
+  );
+}
+
+export default function ProjectOverviewPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8">
+          <Skeleton className="h-64 w-full" />
+        </div>
+      }
+    >
+      <ProjectOverviewContent />
+    </Suspense>
   );
 }

@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, use } from 'react';
+import React, { useState, Suspense } from 'react';
 import { AppLayout } from '@/src/components/layout/AppLayout';
 import { useWorkspace } from '@/src/hooks/useWorkspaces';
 import { useProjects } from '@/src/hooks/useProjects';
 import { useWorkspaceActivities } from '@/src/hooks/useActivities';
+import { useWorkspaceParams } from '@/src/hooks/useWorkspaceParams';
 import { Button } from '@/src/components/ui/Button';
 import { Skeleton } from '@/src/components/ui/Skeleton';
 import { Avatar } from '@/src/components/ui/Avatar';
@@ -24,17 +25,15 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 
-export default function WorkspaceOverviewPage({
-  params,
-}: {
-  params: Promise<{ workspaceId: string }>;
-}) {
-  const resolvedParams = use(params);
-  const workspaceId = resolvedParams.workspaceId;
-
+function WorkspaceOverviewContent() {
+  const { workspaceId } = useWorkspaceParams();
   const { data: workspace, isLoading: isWorkspaceLoading } = useWorkspace(workspaceId);
   const { data: projects, isLoading: isProjectsLoading } = useProjects(workspaceId);
-  const { data: activities, isLoading: isActivitiesLoading } = useWorkspaceActivities(workspaceId, 1, 10);
+  const { data: activities, isLoading: isActivitiesLoading } = useWorkspaceActivities(
+    workspaceId,
+    1,
+    10
+  );
 
   const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
 
@@ -51,11 +50,17 @@ export default function WorkspaceOverviewPage({
           <div>
             <div className="flex items-center gap-2.5">
               <h1 className="text-xl font-bold text-neutral-900 tracking-tight">
-                {isWorkspaceLoading ? <Skeleton className="h-7 w-48" /> : workspace?.name}
+                {isWorkspaceLoading ? (
+                  <Skeleton className="h-7 w-48" />
+                ) : (
+                  workspace?.name || 'Workspace'
+                )}
               </h1>
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-neutral-100 text-neutral-600 border border-neutral-200">
-                slug: {workspace?.slug}
-              </span>
+              {workspace?.slug && (
+                <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-neutral-100 text-neutral-600 border border-neutral-200">
+                  slug: {workspace.slug}
+                </span>
+              )}
             </div>
             <p className="text-xs text-neutral-500 mt-1 flex items-center gap-2">
               <Calendar className="w-3.5 h-3.5" />
@@ -69,7 +74,13 @@ export default function WorkspaceOverviewPage({
           </div>
 
           <div className="flex items-center gap-2">
-            <Link href={`/workspaces/${workspaceId}/settings`}>
+            <Link
+              href={
+                workspaceId
+                  ? `/workspaces/settings?workspaceId=${workspaceId}`
+                  : '/workspaces/settings'
+              }
+            >
               <Button variant="outline" size="sm">
                 <Settings className="w-3.5 h-3.5 mr-1" /> Settings
               </Button>
@@ -88,7 +99,11 @@ export default function WorkspaceOverviewPage({
               <span>Projects ({projects?.length || 0})</span>
             </h2>
             <Link
-              href={`/workspaces/${workspaceId}/projects`}
+              href={
+                workspaceId
+                  ? `/workspaces/projects?workspaceId=${workspaceId}`
+                  : '/workspaces/projects'
+              }
               className="text-xs text-neutral-500 hover:text-black transition-colors"
             >
               Manage projects →
@@ -122,7 +137,7 @@ export default function WorkspaceOverviewPage({
                         {project.name}
                       </h3>
                       <Link
-                        href={`/workspaces/${workspaceId}/projects/${project.id}/board`}
+                        href={`/workspaces/projects/board?workspaceId=${workspaceId}&projectId=${project.id}`}
                         className="text-neutral-400 hover:text-black"
                       >
                         <ArrowUpRight className="w-4 h-4" />
@@ -134,11 +149,9 @@ export default function WorkspaceOverviewPage({
                   </div>
 
                   <div className="pt-4 mt-3 border-t border-neutral-100 flex items-center justify-between text-[11px]">
-                    <span className="text-neutral-400">
-                      {project.boards?.length || 0} columns
-                    </span>
+                    <span className="text-neutral-400">{project.boards?.length || 0} columns</span>
                     <Link
-                      href={`/workspaces/${workspaceId}/projects/${project.id}/board`}
+                      href={`/workspaces/projects/board?workspaceId=${workspaceId}&projectId=${project.id}`}
                       className="font-medium text-black hover:underline flex items-center gap-1"
                     >
                       <KanbanSquare className="w-3.5 h-3.5" />
@@ -161,7 +174,11 @@ export default function WorkspaceOverviewPage({
                 <span>Workspace Members</span>
               </h2>
               <Link
-                href={`/workspaces/${workspaceId}/members`}
+                href={
+                  workspaceId
+                    ? `/workspaces/members?workspaceId=${workspaceId}`
+                    : '/workspaces/members'
+                }
                 className="text-xs text-neutral-500 hover:text-black transition-colors"
               >
                 View all ({workspace?.members?.length || 0}) →
@@ -204,7 +221,11 @@ export default function WorkspaceOverviewPage({
                 <span>Audit Stream</span>
               </h2>
               <Link
-                href={`/workspaces/${workspaceId}/activity`}
+                href={
+                  workspaceId
+                    ? `/workspaces/activity?workspaceId=${workspaceId}`
+                    : '/workspaces/activity'
+                }
                 className="text-xs text-neutral-500 hover:text-black transition-colors"
               >
                 Full audit log →
@@ -228,5 +249,19 @@ export default function WorkspaceOverviewPage({
         workspaceId={workspaceId}
       />
     </AppLayout>
+  );
+}
+
+export default function WorkspaceOverviewPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8">
+          <Skeleton className="h-64 w-full" />
+        </div>
+      }
+    >
+      <WorkspaceOverviewContent />
+    </Suspense>
   );
 }

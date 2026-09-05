@@ -1,21 +1,17 @@
 'use client';
 
-import React, { use } from 'react';
+import React, { Suspense } from 'react';
 import { AppLayout } from '@/src/components/layout/AppLayout';
 import { useWorkspace } from '@/src/hooks/useWorkspaces';
 import { useProject } from '@/src/hooks/useProjects';
 import { KanbanBoard } from '@/src/components/features/KanbanBoard';
 import { Skeleton } from '@/src/components/ui/Skeleton';
+import { useWorkspaceParams } from '@/src/hooks/useWorkspaceParams';
 import Link from 'next/link';
 import { FolderKanban, ArrowLeft } from 'lucide-react';
 
-export default function ProjectBoardPage({
-  params,
-}: {
-  params: Promise<{ workspaceId: string; projectId: string }>;
-}) {
-  const resolvedParams = use(params);
-  const { workspaceId, projectId } = resolvedParams;
+function ProjectBoardContent() {
+  const { workspaceId, projectId } = useWorkspaceParams();
 
   const { data: workspace } = useWorkspace(workspaceId);
   const { data: project, isLoading: isProjectLoading } = useProject(workspaceId, projectId);
@@ -23,9 +19,23 @@ export default function ProjectBoardPage({
   return (
     <AppLayout
       breadcrumbs={[
-        { label: workspace?.name || 'Workspace', href: `/workspaces/${workspaceId}` },
-        { label: 'Projects', href: `/workspaces/${workspaceId}/projects` },
-        { label: project?.name || 'Project', href: `/workspaces/${workspaceId}/projects/${projectId}` },
+        {
+          label: workspace?.name || 'Workspace',
+          href: workspaceId ? `/workspaces?workspaceId=${workspaceId}` : '/workspaces',
+        },
+        {
+          label: 'Projects',
+          href: workspaceId
+            ? `/workspaces/projects?workspaceId=${workspaceId}`
+            : '/workspaces/projects',
+        },
+        {
+          label: project?.name || 'Project',
+          href:
+            workspaceId && projectId
+              ? `/workspaces/projects/detail?workspaceId=${workspaceId}&projectId=${projectId}`
+              : '/workspaces/projects',
+        },
         { label: 'Board' },
       ]}
     >
@@ -34,7 +44,11 @@ export default function ProjectBoardPage({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-neutral-200">
           <div className="flex items-center gap-3">
             <Link
-              href={`/workspaces/${workspaceId}/projects`}
+              href={
+                workspaceId
+                  ? `/workspaces/projects?workspaceId=${workspaceId}`
+                  : '/workspaces/projects'
+              }
               className="p-1.5 rounded-lg border border-neutral-200 text-neutral-500 hover:text-black hover:bg-neutral-100 transition-colors"
               title="Back to Projects"
             >
@@ -61,8 +75,28 @@ export default function ProjectBoardPage({
         </div>
 
         {/* The Kanban Board */}
-        <KanbanBoard workspaceId={workspaceId} projectId={projectId} />
+        {workspaceId && projectId ? (
+          <KanbanBoard workspaceId={workspaceId} projectId={projectId} />
+        ) : (
+          <div className="p-12 text-center text-xs text-neutral-400">
+            Select a workspace and project to view the Kanban board.
+          </div>
+        )}
       </div>
     </AppLayout>
+  );
+}
+
+export default function ProjectBoardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8">
+          <Skeleton className="h-64 w-full" />
+        </div>
+      }
+    >
+      <ProjectBoardContent />
+    </Suspense>
   );
 }

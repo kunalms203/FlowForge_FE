@@ -1,18 +1,15 @@
 'use client';
 
-import React, { use } from 'react';
+import React, { Suspense } from 'react';
 import { AppLayout } from '@/src/components/layout/AppLayout';
 import { useWorkspace } from '@/src/hooks/useWorkspaces';
 import { useWorkspaceActivities } from '@/src/hooks/useActivities';
+import { useWorkspaceParams } from '@/src/hooks/useWorkspaceParams';
 import { ActivityTimeline } from '@/src/components/features/ActivityTimeline';
+import { Skeleton } from '@/src/components/ui/Skeleton';
 
-export default function WorkspaceActivityPage({
-  params,
-}: {
-  params: Promise<{ workspaceId: string }>;
-}) {
-  const resolvedParams = use(params);
-  const workspaceId = resolvedParams.workspaceId;
+function WorkspaceActivityContent() {
+  const { workspaceId } = useWorkspaceParams();
 
   const { data: workspace } = useWorkspace(workspaceId);
   const { data: activities, isLoading } = useWorkspaceActivities(workspaceId, 1, 50);
@@ -20,7 +17,10 @@ export default function WorkspaceActivityPage({
   return (
     <AppLayout
       breadcrumbs={[
-        { label: workspace?.name || 'Workspace', href: `/workspaces/${workspaceId}` },
+        {
+          label: workspace?.name || 'Workspace',
+          href: workspaceId ? `/workspaces?workspaceId=${workspaceId}` : '/workspaces',
+        },
         { label: 'Activity Audit Log' },
       ]}
     >
@@ -43,5 +43,19 @@ export default function WorkspaceActivityPage({
         </div>
       </div>
     </AppLayout>
+  );
+}
+
+export default function WorkspaceActivityPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8">
+          <Skeleton className="h-64 w-full" />
+        </div>
+      }
+    >
+      <WorkspaceActivityContent />
+    </Suspense>
   );
 }

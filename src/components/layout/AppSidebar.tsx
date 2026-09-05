@@ -34,33 +34,39 @@ export function AppSidebar({ isMobileOpen, onCloseMobile }: AppSidebarProps) {
   const workspaceNav = [
     {
       label: 'Overview',
-      href: workspaceId ? `/workspaces/${workspaceId}` : '/dashboard',
+      href: workspaceId ? `/workspaces?workspaceId=${workspaceId}` : '/workspaces',
       icon: LayoutDashboard,
-      active: pathname === `/workspaces/${workspaceId}`,
+      active: pathname === '/workspaces',
     },
     {
       label: 'Projects',
-      href: workspaceId ? `/workspaces/${workspaceId}/projects` : '/dashboard',
+      href: workspaceId
+        ? `/workspaces/projects?workspaceId=${workspaceId}`
+        : '/workspaces/projects',
       icon: FolderKanban,
-      active: pathname.startsWith(`/workspaces/${workspaceId}/projects`) && !pathname.includes('/board'),
+      active: pathname === '/workspaces/projects' || pathname === '/workspaces/projects/detail',
     },
     {
       label: 'Members',
-      href: workspaceId ? `/workspaces/${workspaceId}/members` : '/dashboard',
+      href: workspaceId ? `/workspaces/members?workspaceId=${workspaceId}` : '/workspaces/members',
       icon: Users,
-      active: pathname === `/workspaces/${workspaceId}/members`,
+      active: pathname === '/workspaces/members',
     },
     {
       label: 'Activity',
-      href: workspaceId ? `/workspaces/${workspaceId}/activity` : '/dashboard',
+      href: workspaceId
+        ? `/workspaces/activity?workspaceId=${workspaceId}`
+        : '/workspaces/activity',
       icon: Activity,
-      active: pathname === `/workspaces/${workspaceId}/activity`,
+      active: pathname === '/workspaces/activity',
     },
     {
       label: 'Settings',
-      href: workspaceId ? `/workspaces/${workspaceId}/settings` : '/dashboard',
+      href: workspaceId
+        ? `/workspaces/settings?workspaceId=${workspaceId}`
+        : '/workspaces/settings',
       icon: Settings,
-      active: pathname === `/workspaces/${workspaceId}/settings`,
+      active: pathname === '/workspaces/settings',
     },
   ];
 
@@ -86,9 +92,7 @@ export function AppSidebar({ isMobileOpen, onCloseMobile }: AppSidebarProps) {
             <div className="w-5 h-5 rounded bg-black text-white flex items-center justify-center font-black text-[11px] tracking-tighter">
               FF
             </div>
-            <span className="font-semibold text-xs text-neutral-900 tracking-tight">
-              FLOWFORGE
-            </span>
+            <span className="font-semibold text-xs text-neutral-900 tracking-tight">FLOWFORGE</span>
           </div>
           <WorkspaceSwitcher />
         </div>
@@ -131,7 +135,11 @@ export function AppSidebar({ isMobileOpen, onCloseMobile }: AppSidebarProps) {
                   Projects & Boards
                 </span>
                 <Link
-                  href={`/workspaces/${workspaceId}/projects`}
+                  href={
+                    workspaceId
+                      ? `/workspaces/projects?workspaceId=${workspaceId}`
+                      : '/workspaces/projects'
+                  }
                   className="text-neutral-400 hover:text-neutral-900 p-0.5 rounded transition-colors"
                   title="All Projects"
                 >
@@ -146,11 +154,11 @@ export function AppSidebar({ isMobileOpen, onCloseMobile }: AppSidebarProps) {
                   </div>
                 ) : (
                   projects.map((proj) => {
-                    const isBoardActive = pathname.includes(`/projects/${proj.id}/board`);
+                    const isBoardActive = pathname === '/workspaces/projects/board';
                     return (
                       <Link
                         key={proj.id}
-                        href={`/workspaces/${workspaceId}/projects/${proj.id}/board`}
+                        href={`/workspaces/projects/board?workspaceId=${workspaceId}&projectId=${proj.id}`}
                         onClick={onCloseMobile}
                         className={cn(
                           'flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors group',

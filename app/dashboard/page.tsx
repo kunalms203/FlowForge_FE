@@ -49,7 +49,7 @@ export default function DashboardPage() {
 
           <div className="flex items-center gap-2">
             {workspaceId && (
-              <Link href={`/workspaces/${workspaceId}/projects`}>
+              <Link href={`/workspaces/projects?workspaceId=${workspaceId}`}>
                 <Button size="sm">
                   <Plus className="w-3.5 h-3.5 mr-1" /> New Project
                 </Button>
@@ -120,7 +120,7 @@ export default function DashboardPage() {
               </h2>
               {workspaceId && (
                 <Link
-                  href={`/workspaces/${workspaceId}/projects`}
+                  href={`/workspaces/projects?workspaceId=${workspaceId}`}
                   className="text-xs text-neutral-500 hover:text-black transition-colors"
                 >
                   View all →
@@ -137,7 +137,7 @@ export default function DashboardPage() {
               <div className="p-8 rounded-xl border border-dashed border-neutral-200 bg-white text-center">
                 <p className="text-xs text-neutral-500 mb-3">No projects in this workspace yet.</p>
                 {workspaceId && (
-                  <Link href={`/workspaces/${workspaceId}/projects`}>
+                  <Link href={`/workspaces/projects?workspaceId=${workspaceId}`}>
                     <Button size="sm">Create First Project</Button>
                   </Link>
                 )}
@@ -155,7 +155,7 @@ export default function DashboardPage() {
                           {project.name}
                         </h3>
                         <Link
-                          href={`/workspaces/${workspaceId}/projects/${project.id}/board`}
+                          href={`/workspaces/projects/board?workspaceId=${workspaceId}&projectId=${project.id}`}
                           className="text-neutral-400 hover:text-black"
                         >
                           <ArrowUpRight className="w-4 h-4" />
@@ -171,7 +171,7 @@ export default function DashboardPage() {
                         {project.boards?.length || 0} columns
                       </span>
                       <Link
-                        href={`/workspaces/${workspaceId}/projects/${project.id}/board`}
+                        href={`/workspaces/projects/board?workspaceId=${workspaceId}&projectId=${project.id}`}
                         className="font-medium text-black hover:underline flex items-center gap-1"
                       >
                         <KanbanSquare className="w-3.5 h-3.5" />
@@ -193,7 +193,7 @@ export default function DashboardPage() {
               </h2>
               {workspaceId && (
                 <Link
-                  href={`/workspaces/${workspaceId}/activity`}
+                  href={`/workspaces/activity?workspaceId=${workspaceId}`}
                   className="text-xs text-neutral-500 hover:text-black transition-colors"
                 >
                   History →

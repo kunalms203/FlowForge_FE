@@ -1,13 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { AppLayout } from '@/src/components/layout/AppLayout';
-import {
-  useWorkspace,
-  useUpdateWorkspace,
-  useDeleteWorkspace,
-} from '@/src/hooks/useWorkspaces';
+import { useWorkspace, useUpdateWorkspace, useDeleteWorkspace } from '@/src/hooks/useWorkspaces';
 import { useAuth } from '@/src/context/AuthContext';
+import { useWorkspaceParams } from '@/src/hooks/useWorkspaceParams';
 import { Button } from '@/src/components/ui/Button';
 import { Input } from '@/src/components/ui/Input';
 import { ErrorAlert } from '@/src/components/ui/ErrorAlert';
@@ -15,14 +12,8 @@ import { Skeleton } from '@/src/components/ui/Skeleton';
 import { useRouter } from 'next/navigation';
 import { Check, Trash2, ShieldAlert } from 'lucide-react';
 
-export default function WorkspaceSettingsPage({
-  params,
-}: {
-  params: Promise<{ workspaceId: string }>;
-}) {
-  const resolvedParams = use(params);
-  const workspaceId = resolvedParams.workspaceId;
-
+function WorkspaceSettingsContent() {
+  const { workspaceId } = useWorkspaceParams();
   const { setCurrentWorkspace } = useAuth();
   const { data: workspace, isLoading } = useWorkspace(workspaceId);
   const updateWorkspaceMutation = useUpdateWorkspace(workspaceId);
@@ -76,15 +67,16 @@ export default function WorkspaceSettingsPage({
   return (
     <AppLayout
       breadcrumbs={[
-        { label: workspace?.name || 'Workspace', href: `/workspaces/${workspaceId}` },
+        {
+          label: workspace?.name || 'Workspace',
+          href: workspaceId ? `/workspaces?workspaceId=${workspaceId}` : '/workspaces',
+        },
         { label: 'Settings' },
       ]}
     >
       <div className="max-w-3xl mx-auto space-y-8">
         <div className="pb-4 border-b border-neutral-200">
-          <h1 className="text-xl font-bold text-neutral-900 tracking-tight">
-            Workspace Settings
-          </h1>
+          <h1 className="text-xl font-bold text-neutral-900 tracking-tight">Workspace Settings</h1>
           <p className="text-xs text-neutral-500 mt-0.5">
             Manage workspace identity, configuration, and preferences.
           </p>
@@ -122,7 +114,9 @@ export default function WorkspaceSettingsPage({
                   <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
                     <Check className="w-4 h-4" /> Settings updated successfully
                   </span>
-                ) : <span />}
+                ) : (
+                  <span />
+                )}
 
                 <Button type="submit" size="sm" isLoading={updateWorkspaceMutation.isPending}>
                   Save Changes
@@ -141,7 +135,8 @@ export default function WorkspaceSettingsPage({
             <div>
               <h2 className="text-sm font-semibold text-neutral-900">Danger Zone</h2>
               <p className="text-xs text-neutral-500 mt-0.5 leading-relaxed">
-                Deleting this workspace will remove all associated projects, boards, tasks, comments, and attachments.
+                Deleting this workspace will remove all associated projects, boards, tasks,
+                comments, and attachments.
               </p>
             </div>
           </div>
@@ -159,5 +154,19 @@ export default function WorkspaceSettingsPage({
         </div>
       </div>
     </AppLayout>
+  );
+}
+
+export default function WorkspaceSettingsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8">
+          <Skeleton className="h-64 w-full" />
+        </div>
+      }
+    >
+      <WorkspaceSettingsContent />
+    </Suspense>
   );
 }

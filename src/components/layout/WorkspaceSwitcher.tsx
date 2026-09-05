@@ -40,7 +40,7 @@ export function WorkspaceSwitcher() {
   const handleSelect = (ws: any) => {
     setCurrentWorkspace(ws);
     setIsOpen(false);
-    router.push(`/workspaces/${ws.id}`);
+    router.push(`/workspaces?workspaceId=${ws.id}`);
   };
 
   const handleCreateWorkspace = async (e: React.FormEvent) => {
@@ -55,7 +55,7 @@ export function WorkspaceSwitcher() {
       setCurrentWorkspace(created);
       setIsCreateModalOpen(false);
       setNewWorkspaceName('');
-      router.push(`/workspaces/${created.id}`);
+      router.push(`/workspaces?workspaceId=${created.id}`);
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Failed to create workspace');
     }

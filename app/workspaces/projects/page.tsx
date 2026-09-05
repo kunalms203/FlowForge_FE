@@ -1,13 +1,10 @@
 'use client';
 
-import React, { useState, use } from 'react';
+import React, { useState, Suspense } from 'react';
 import { AppLayout } from '@/src/components/layout/AppLayout';
 import { useWorkspace } from '@/src/hooks/useWorkspaces';
-import {
-  useProjects,
-  useUpdateProject,
-  useDeleteProject,
-} from '@/src/hooks/useProjects';
+import { useProjects, useUpdateProject, useDeleteProject } from '@/src/hooks/useProjects';
+import { useWorkspaceParams } from '@/src/hooks/useWorkspaceParams';
 import { Button } from '@/src/components/ui/Button';
 import { Input } from '@/src/components/ui/Input';
 import { Textarea } from '@/src/components/ui/Textarea';
@@ -27,13 +24,8 @@ import {
 } from 'lucide-react';
 import { Project } from '@/src/types';
 
-export default function WorkspaceProjectsPage({
-  params,
-}: {
-  params: Promise<{ workspaceId: string }>;
-}) {
-  const resolvedParams = use(params);
-  const workspaceId = resolvedParams.workspaceId;
+function WorkspaceProjectsContent() {
+  const { workspaceId } = useWorkspaceParams();
 
   const { data: workspace } = useWorkspace(workspaceId);
   const { data: projects, isLoading } = useProjects(workspaceId);
@@ -83,7 +75,10 @@ export default function WorkspaceProjectsPage({
   return (
     <AppLayout
       breadcrumbs={[
-        { label: workspace?.name || 'Workspace', href: `/workspaces/${workspaceId}` },
+        {
+          label: workspace?.name || 'Workspace',
+          href: workspaceId ? `/workspaces?workspaceId=${workspaceId}` : '/workspaces',
+        },
         { label: 'Projects' },
       ]}
     >
@@ -128,7 +123,9 @@ export default function WorkspaceProjectsPage({
             <FolderKanban className="w-8 h-8 text-neutral-300 mx-auto mb-2 stroke-[1.5]" />
             <h3 className="text-sm font-semibold text-neutral-900">No projects found</h3>
             <p className="text-xs text-neutral-500 max-w-sm mx-auto mt-1 mb-4">
-              {searchQuery ? 'Try adjusting your search query.' : 'Create your first project to begin organizing work.'}
+              {searchQuery
+                ? 'Try adjusting your search query.'
+                : 'Create your first project to begin organizing work.'}
             </p>
             {!searchQuery && (
               <Button size="sm" onClick={() => setIsCreateOpen(true)}>
@@ -191,12 +188,10 @@ export default function WorkspaceProjectsPage({
                 </div>
 
                 <div className="pt-4 mt-4 border-t border-neutral-100 flex items-center justify-between text-[11px]">
-                  <span className="text-neutral-400">
-                    {project.boards?.length || 0} columns
-                  </span>
+                  <span className="text-neutral-400">{project.boards?.length || 0} columns</span>
 
                   <Link
-                    href={`/workspaces/${workspaceId}/projects/${project.id}/board`}
+                    href={`/workspaces/projects/board?workspaceId=${workspaceId}&projectId=${project.id}`}
                     className="font-semibold text-black hover:underline flex items-center gap-1"
                   >
                     <KanbanSquare className="w-3.5 h-3.5" />
@@ -253,5 +248,19 @@ export default function WorkspaceProjectsPage({
         </form>
       </Modal>
     </AppLayout>
+  );
+}
+
+export default function WorkspaceProjectsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8">
+          <Skeleton className="h-64 w-full" />
+        </div>
+      }
+    >
+      <WorkspaceProjectsContent />
+    </Suspense>
   );
 }

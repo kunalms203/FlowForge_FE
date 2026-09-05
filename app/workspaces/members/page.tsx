@@ -1,28 +1,26 @@
 'use client';
 
-import React, { use } from 'react';
+import React, { Suspense } from 'react';
 import { AppLayout } from '@/src/components/layout/AppLayout';
 import { useWorkspace } from '@/src/hooks/useWorkspaces';
+import { useWorkspaceParams } from '@/src/hooks/useWorkspaceParams';
 import { Avatar } from '@/src/components/ui/Avatar';
 import { Badge } from '@/src/components/ui/Badge';
 import { Skeleton } from '@/src/components/ui/Skeleton';
 import { Users, Mail, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 
-export default function WorkspaceMembersPage({
-  params,
-}: {
-  params: Promise<{ workspaceId: string }>;
-}) {
-  const resolvedParams = use(params);
-  const workspaceId = resolvedParams.workspaceId;
-
+function WorkspaceMembersContent() {
+  const { workspaceId } = useWorkspaceParams();
   const { data: workspace, isLoading } = useWorkspace(workspaceId);
 
   return (
     <AppLayout
       breadcrumbs={[
-        { label: workspace?.name || 'Workspace', href: `/workspaces/${workspaceId}` },
+        {
+          label: workspace?.name || 'Workspace',
+          href: workspaceId ? `/workspaces?workspaceId=${workspaceId}` : '/workspaces',
+        },
         { label: 'Members' },
       ]}
     >
@@ -65,7 +63,10 @@ export default function WorkspaceMembersPage({
                   {workspace.members.map((member: any, index: number) => {
                     const user = member.user || { fullName: 'Member', email: 'N/A' };
                     return (
-                      <tr key={member.id || index} className="hover:bg-neutral-50/50 transition-colors">
+                      <tr
+                        key={member.id || index}
+                        className="hover:bg-neutral-50/50 transition-colors"
+                      >
                         <td className="py-3 px-4 flex items-center gap-2.5">
                           <Avatar name={user.fullName} size="sm" />
                           <span className="font-semibold text-neutral-900">{user.fullName}</span>
@@ -99,5 +100,19 @@ export default function WorkspaceMembersPage({
         </div>
       </div>
     </AppLayout>
+  );
+}
+
+export default function WorkspaceMembersPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8">
+          <Skeleton className="h-64 w-full" />
+        </div>
+      }
+    >
+      <WorkspaceMembersContent />
+    </Suspense>
   );
 }
